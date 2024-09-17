@@ -1,0 +1,191 @@
+package com.example.trainreservation.dto;
+
+public class ReservationDTO {
+    private String passengerName;
+    private String trainNumber;
+    private String seatClass;
+
+    // Getters and Setters
+    public String getPassengerName() {
+        return passengerName;
+    }
+
+    public void setPassengerName(String passengerName) {
+        this.passengerName = passengerName;
+    }
+
+    public String getTrainNumber() {
+        return trainNumber;
+    }
+
+    public void setTrainNumber(String trainNumber) {
+        this.trainNumber = trainNumber;
+    }
+
+    public String getSeatClass() {
+        return seatClass;
+    }
+
+    public void setSeatClass(String seatClass) {
+        this.seatClass = seatClass;
+    }
+}
+
+
+
+
+
+
+package com.example.trainreservation.model;
+
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "reservations")
+public class Reservation {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String passengerName;
+    private String trainNumber;
+    private String seatClass;
+
+    // Getters and Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getPassengerName() {
+        return passengerName;
+    }
+
+    public void setPassengerName(String passengerName) {
+        this.passengerName = passengerName;
+    }
+
+    public String getTrainNumber() {
+        return trainNumber;
+    }
+
+    public void setTrainNumber(String trainNumber) {
+        this.trainNumber = trainNumber;
+    }
+
+    public String getSeatClass() {
+        return seatClass;
+    }
+
+    public void setSeatClass(String seatClass) {
+        this.seatClass = seatClass;
+    }
+}
+
+
+
+
+
+package com.example.trainreservation.repository;
+
+import com.example.trainreservation.model.Reservation;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface ReservationRepository extends JpaRepository<Reservation, Long> {
+}
+
+
+
+
+package com.example.trainreservation.service;
+
+import com.example.trainreservation.dto.ReservationDTO;
+import com.example.trainreservation.model.Reservation;
+import com.example.trainreservation.repository.ReservationRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class ReservationService {
+
+    @Autowired
+    private ReservationRepository reservationRepository;
+
+    public void saveReservation(ReservationDTO reservationDTO) {
+        Reservation reservation = new Reservation();
+        reservation.setPassengerName(reservationDTO.getPassengerName());
+        reservation.setTrainNumber(reservationDTO.getTrainNumber());
+        reservation.setSeatClass(reservationDTO.getSeatClass());
+
+        reservationRepository.save(reservation);
+    }
+}
+
+
+
+package com.example.trainreservation.controller;
+
+import com.example.trainreservation.dto.ReservationDTO;
+import com.example.trainreservation.service.ReservationService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+
+@Controller
+public class ReservationController {
+
+    @Autowired
+    private ReservationService reservationService;
+
+    @GetMapping("/reservation")
+    public String showForm(Model model) {
+        model.addAttribute("reservationDTO", new ReservationDTO());
+        return "reservation";
+    }
+
+    @PostMapping("/reservation")
+    public String submitForm(ReservationDTO reservationDTO, Model model) {
+        reservationService.saveReservation(reservationDTO);
+        model.addAttribute("message", "Reservation successful!");
+        return "reservation";
+    }
+}
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Train Reservation</title>
+</head>
+<body>
+    <h1>Train Reservation Form</h1>
+
+    <form th:action="@{/reservation}" th:object="${reservationDTO}" method="post">
+        <label for="passengerName">Passenger Name:</label>
+        <input type="text" id="passengerName" th:field="*{passengerName}" /><br/>
+
+        <label for="trainNumber">Train Number:</label>
+        <input type="text" id="trainNumber" th:field="*{trainNumber}" /><br/>
+
+        <label for="seatClass">Seat Class:</label>
+        <input type="text" id="seatClass" th:field="*{seatClass}" /><br/>
+
+        <button type="submit">Submit</button>
+    </form>
+
+    <div th:if="${message}">
+        <p th:text="${message}"></p>
+    </div>
+</body>
+</html>
+
