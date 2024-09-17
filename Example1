@@ -168,3 +168,146 @@ spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL5Dialect
+
+
+
+package com.example.studentform.model;
+
+import javax.persistence.*;
+import java.util.List;
+
+@Entity
+public class Student {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+    private int age;
+    private String gender;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "student_subjects", joinColumns = @JoinColumn(name = "student_id"))
+    @Column(name = "subject")
+    private List<String> subjects;
+
+    // Getters and Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public List<String> getSubjects() {
+        return subjects;
+    }
+
+    public void setSubjects(List<String> subjects) {
+        this.subjects = subjects;
+    }
+}
+
+
+
+
+
+
+
+package com.example.studentform.controller;
+
+import com.example.studentform.model.Student;
+import com.example.studentform.repository.StudentRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+
+import java.util.List;
+
+@Controller
+public class StudentController {
+
+    @Autowired
+    private StudentRepository studentRepository;
+
+    @GetMapping("/studentform")
+    public String showForm(Model model) {
+        model.addAttribute("student", new Student());
+        return "student_form";
+    }
+
+    @GetMapping("/students")
+    public String listStudents(Model model) {
+        List<Student> students = studentRepository.findAll();
+        model.addAttribute("students", students);
+        return "student_list";
+    }
+    
+    @PostMapping("/submit")
+    public String submitForm(Student student, Model model) {
+        studentRepository.save(student);
+        model.addAttribute("message", "Student details submitted successfully!");
+        return "success";
+    }
+}
+
+
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Student List</title>
+</head>
+<body>
+    <h2>List of Students</h2>
+
+    <table border="1">
+        <tr>
+            <th>Name</th>
+            <th>Age</th>
+            <th>Gender</th>
+            <th>Subjects</th>
+        </tr>
+        <tr th:each="student : ${students}">
+            <td th:text="${student.name}"></td>
+            <td th:text="${student.age}"></td>
+            <td th:text="${student.gender}"></td>
+            <td>
+                <ul>
+                    <li th:each="subject : ${student.subjects}" th:text="${subject}"></li>
+                </ul>
+            </td>
+        </tr>
+    </table>
+
+    <br>
+    <a th:href="@{/studentform}">Go Back to Form</a>
+</body>
+</html>
