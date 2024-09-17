@@ -1,0 +1,201 @@
+package com.example.demo.model;
+
+import java.io.Serializable;
+
+public class Student implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    private String name;
+    private String email;
+    private String course;
+
+    public Student() {}
+
+    public Student(String name, String email, String course) {
+        this.name = name;
+        this.email = email;
+        this.course = course;
+    }
+
+    // Getters and Setters
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getCourse() {
+        return course;
+    }
+
+    public void setCourse(String course) {
+        this.course = course;
+    }
+}
+
+
+
+
+
+
+package com.example.demo.controller;
+
+import com.example.demo.model.Student;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+
+@Controller
+public class StudentController {
+
+    private static final String FILE_NAME = "students.ser";
+
+    // Form for registering a student
+    @GetMapping("/register")
+    public String showRegisterForm(Model model) {
+        model.addAttribute("student", new Student());
+        return "register";
+    }
+
+    // Submit the student registration and store the data
+    @PostMapping("/register")
+    public String registerStudent(@ModelAttribute Student student, Model model) {
+        // Serialize and save the student data to a file
+        try (FileOutputStream fos = new FileOutputStream(FILE_NAME, true);
+             ObjectOutputStream oos = new ObjectOutputStream(fos)) {
+            oos.writeObject(student);
+        } catch (IOException e) {
+            e.printStackTrace();
+            model.addAttribute("message", "Failed to save student data.");
+            return "register";
+        }
+        model.addAttribute("message", "Student registered successfully!");
+        return "register";
+    }
+
+    // Form for searching and retrieving a student
+    @GetMapping("/search")
+    public String showSearchForm() {
+        return "search";
+    }
+
+    // Search for a student and display the result
+    @PostMapping("/search")
+    public String searchStudent(@RequestParam("name") String name, Model model) {
+        List<Student> students = retrieveStudents();
+        for (Student student : students) {
+            if (student.getName().equalsIgnoreCase(name)) {
+                model.addAttribute("student", student);
+                return "result";
+            }
+        }
+        model.addAttribute("message", "Student not found.");
+        return "search";
+    }
+
+    // Deserialize the list of students from the file
+    private List<Student> retrieveStudents() {
+        List<Student> students = new ArrayList<>();
+        try (FileInputStream fis = new FileInputStream(FILE_NAME);
+             ObjectInputStream ois = new ObjectInputStream(fis)) {
+            while (fis.available() > 0) {
+                students.add((Student) ois.readObject());
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return students;
+    }
+}
+
+
+
+
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Register Student</title>
+</head>
+<body>
+<h1>Register Student</h1>
+<form th:action="@{/register}" th:object="${student}" method="post">
+    <label for="name">Name:</label>
+    <input type="text" id="name" th:field="*{name}" required/><br>
+
+    <label for="email">Email:</label>
+    <input type="email" id="email" th:field="*{email}" required/><br>
+
+    <label for="course">Course:</label>
+    <input type="text" id="course" th:field="*{course}" required/><br>
+
+    <button type="submit">Register</button>
+</form>
+
+<p th:text="${message}"></p>
+</body>
+</html>
+
+
+
+
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Search Student</title>
+</head>
+<body>
+<h1>Search for Student</h1>
+<form th:action="@{/search}" method="post">
+    <label for="name">Enter Name:</label>
+    <input type="text" id="name" name="name" required/><br>
+
+    <button type="submit">Search</button>
+</form>
+
+<p th:text="${message}"></p>
+</body>
+</html>
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Student Details</title>
+</head>
+<body>
+<h1>Student Details</h1>
+<p>Name: <span th:text="${student.name}"></span></p>
+<p>Email: <span th:text="${student.email}"></span></p>
+<p>Course: <span th:text="${student.course}"></span></p>
+</body>
+</html>
+
+
+
+
+
+
