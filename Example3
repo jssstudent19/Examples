@@ -1,0 +1,132 @@
+package com.example.studentform.repository;
+
+import com.example.studentform.model.Student;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface StudentRepository extends JpaRepository<Student, Long> {
+    // Custom method to search for students by name (case insensitive)
+    List<Student> findByNameIgnoreCase(String name);
+}
+
+
+
+
+
+
+package com.example.studentform.controller;
+
+import com.example.studentform.model.Student;
+import com.example.studentform.repository.StudentRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
+
+@Controller
+public class StudentController {
+
+    @Autowired
+    private StudentRepository studentRepository;
+
+    @GetMapping("/studentform")
+    public String showForm(Model model) {
+        model.addAttribute("student", new Student());
+        return "student_form";
+    }
+
+    @GetMapping("/students")
+    public String listStudents(Model model) {
+        List<Student> students = studentRepository.findAll();
+        model.addAttribute("students", students);
+        return "student_list";
+    }
+
+    // New method to handle search by student name
+    @GetMapping("/search")
+    public String searchStudent(@RequestParam("name") String name, Model model) {
+        List<Student> students = studentRepository.findByNameIgnoreCase(name);
+        if (students.isEmpty()) {
+            model.addAttribute("message", "No student found with the name: " + name);
+        } else {
+            model.addAttribute("students", students);
+        }
+        return "student_search_result";
+    }
+}
+
+
+
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Search Student</title>
+</head>
+<body>
+    <h2>Search for a Student</h2>
+
+    <form th:action="@{/search}" method="get">
+        <label>Enter Student Name:</label>
+        <input type="text" name="name" />
+        <button type="submit">Search</button>
+    </form>
+
+    <br>
+    <a th:href="@{/studentform}">Go Back to Form</a>
+</body>
+</html>
+
+
+
+
+
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Student Search Results</title>
+</head>
+<body>
+    <h2>Search Results</h2>
+
+    <div th:if="${message}">
+        <p th:text="${message}"></p>
+    </div>
+
+    <div th:if="${students}">
+        <table border="1">
+            <tr>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Gender</th>
+                <th>Subjects</th>
+            </tr>
+            <tr th:each="student : ${students}">
+                <td th:text="${student.name}"></td>
+                <td th:text="${student.age}"></td>
+                <td th:text="${student.gender}"></td>
+                <td>
+                    <ul>
+                        <li th:each="subject : ${student.subjects}" th:text="${subject}"></li>
+                    </ul>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <br>
+    <a th:href="@{/search}">Back to Search</a>
+</body>
+</html>
+
+
+
+
+
