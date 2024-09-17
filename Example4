@@ -1,0 +1,99 @@
+<dependencies>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+
+    <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+    </dependency>
+</dependencies>
+
+
+
+
+
+package com.example.demo.model;
+
+public class Person {
+    private String name;
+    private int age;
+    
+    // Constructors
+    public Person() {}
+    
+    public Person(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    // Getters and Setters
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+}
+
+
+
+
+package com.example.demo.controller;
+
+import com.example.demo.model.Person;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/person")
+public class PersonController {
+
+    // Serialization: Convert Java Object to JSON
+    @GetMapping("/serialize")
+    public Person getPerson() {
+        // Return an example Person object
+        return new Person("John Doe", 30);
+    }
+
+    // Deserialization: Convert JSON to Java Object
+    @PostMapping("/deserialize")
+    public String createPerson(@RequestBody Person person) {
+        // Print person info
+        return "Received Person: Name = " + person.getName() + ", Age = " + person.getAge();
+    }
+}
+
+
+
+
+
+
+package com.example.demo;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class DemoApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(DemoApplication.class, args);
+    }
+}
+
+
+
+
+
+
+
