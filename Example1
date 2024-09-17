@@ -1,0 +1,163 @@
+package com.example.studentform.model;
+
+import javax.persistence.*;
+import java.util.List;
+
+@Entity
+public class Student {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+    private int age;
+    private String gender;
+
+    @ElementCollection
+    private List<String> subjects;
+
+    // Getters and Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public List<String> getSubjects() {
+        return subjects;
+    }
+
+    public void setSubjects(List<String> subjects) {
+        this.subjects = subjects;
+    }
+}
+
+
+
+
+
+
+
+
+
+package com.example.studentform.repository;
+
+import com.example.studentform.model.Student;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface StudentRepository extends JpaRepository<Student, Long> {
+}
+
+
+
+
+
+package com.example.studentform.controller;
+
+import com.example.studentform.model.Student;
+import com.example.studentform.repository.StudentRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+
+@Controller
+public class StudentController {
+
+    @Autowired
+    private StudentRepository studentRepository;
+
+    @GetMapping("/studentform")
+    public String showForm(Model model) {
+        model.addAttribute("student", new Student());
+        return "student_form";
+    }
+
+    @PostMapping("/submit")
+    public String submitForm(@ModelAttribute Student student, Model model) {
+        studentRepository.save(student);
+        model.addAttribute("message", "Student details submitted successfully!");
+        return "success";
+    }
+}
+
+
+
+
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Student Form</title>
+</head>
+<body>
+    <h2>Student Registration Form</h2>
+    <form th:action="@{/submit}" th:object="${student}" method="post">
+        <label>Name: </label>
+        <input type="text" th:field="*{name}" /><br><br>
+
+        <label>Age: </label>
+        <input type="number" th:field="*{age}" /><br><br>
+
+        <label>Gender: </label>
+        <input type="radio" th:field="*{gender}" value="Male" /> Male
+        <input type="radio" th:field="*{gender}" value="Female" /> Female<br><br>
+
+        <label>Subjects: </label><br>
+        <input type="checkbox" th:value="Math" th:field="*{subjects}" /> Math <br>
+        <input type="checkbox" th:value="Science" th:field="*{subjects}" /> Science <br>
+        <input type="checkbox" th:value="History" th:field="*{subjects}" /> History <br><br>
+
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Submission Successful</title>
+</head>
+<body>
+    <h2 th:text="${message}"></h2>
+    <a th:href="@{/studentform}">Go Back to Form</a>
+</body>
+</html>
+
