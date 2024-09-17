@@ -127,6 +127,50 @@ public class StudentController {
 </html>
 
 
+@GetMapping("/search")
+public String searchStudent(@RequestParam(value = "name", required = false) String name, Model model) {
+    if (name == null || name.trim().isEmpty()) {
+        model.addAttribute("message", "Please enter a valid student name.");
+        return "student_search_result";
+    }
+    
+    List<Student> students = studentRepository.findByNameIgnoreCase(name);
+    if (students.isEmpty()) {
+        model.addAttribute("message", "No student found with the name: " + name);
+    } else {
+        model.addAttribute("students", students);
+    }
+    return "student_search_result";
+}
+
+
+
+
+
+<div th:if="${message}">
+    <p th:text="${message}"></p>
+</div>
+
+<div th:if="${students}">
+    <table border="1">
+        <tr>
+            <th>Name</th>
+            <th>Age</th>
+            <th>Gender</th>
+            <th>Subjects</th>
+        </tr>
+        <tr th:each="student : ${students}">
+            <td th:text="${student.name}"></td>
+            <td th:text="${student.age}"></td>
+            <td th:text="${student.gender}"></td>
+            <td>
+                <ul>
+                    <li th:each="subject : ${student.subjects}" th:text="${subject}"></li>
+                </ul>
+            </td>
+        </tr>
+    </table>
+</div>
 
 
 
