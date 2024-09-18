@@ -198,4 +198,87 @@ public class StudentController {
 
 
 
+package com.example.demo.controller;
+
+import com.example.demo.model.Student;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+
+@Controller
+public class StudentController {
+
+    private static final String FILE_NAME = "student.txt";
+
+    // Form for registering a student
+    @GetMapping("/register")
+    public String showRegisterForm(Model model) {
+        model.addAttribute("student", new Student());
+        return "register";
+    }
+
+    // Submit the student registration and store the data in a text file
+    @PostMapping("/register")
+    public String registerStudent(@ModelAttribute Student student, Model model) {
+        // Write the student data to a text file
+        try (FileWriter fw = new FileWriter(FILE_NAME, true);
+             BufferedWriter bw = new BufferedWriter(fw)) {
+            // Write each student as a line: "name,email,course"
+            bw.write(student.getName() + "," + student.getEmail() + "," + student.getCourse());
+            bw.newLine();  // Add a new line after each student
+        } catch (IOException e) {
+            e.printStackTrace();
+            model.addAttribute("message", "Failed to save student data.");
+            return "register";
+        }
+        model.addAttribute("message", "Student registered successfully!");
+        return "register";
+    }
+
+    // Form for searching and retrieving a student
+    @GetMapping("/search")
+    public String showSearchForm() {
+        return "search";
+    }
+
+    // Search for a student and display the result
+    @PostMapping("/search")
+    public String searchStudent(@RequestParam("name") String name, Model model) {
+        List<Student> students = retrieveStudents();
+        for (Student student : students) {
+            if (student.getName().equalsIgnoreCase(name)) {
+                model.addAttribute("student", student);
+                return "result";
+            }
+        }
+        model.addAttribute("message", "Student not found.");
+        return "search";
+    }
+
+    // Read student data from the text file
+    private List<Student> retrieveStudents() {
+        List<Student> students = new ArrayList<>();
+        try (FileReader fr = new FileReader(FILE_NAME);
+             BufferedReader br = new BufferedReader(fr)) {
+            String line;
+            // Read each line from the file and parse it into a Student object
+            while ((line = br.readLine()) != null) {
+                String[] data = line.split(",");
+                if (data.length == 3) {
+                    Student student = new Student(data[0], data[1], data[2]);
+                    students.add(student);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return students;
+    }
+}
+
+
 
