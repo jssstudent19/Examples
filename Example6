@@ -1,0 +1,113 @@
+// src/main/java/com/example/demo/service/ApiService.java
+
+package com.example.demo.service;
+
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+@Service
+public class ApiService {
+
+    private final RestTemplate restTemplate;
+
+    public ApiService() {
+        this.restTemplate = new RestTemplate();
+    }
+
+    // GET Request
+    public String getData() {
+        String url = "https://api.example.com/data";
+        ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+        return response.getBody();  // Extract response body
+    }
+
+    // POST Request
+    public String createData(String jsonRequest) {
+        String url = "https://api.example.com/create";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Content-Type", "application/json");
+
+        HttpEntity<String> requestEntity = new HttpEntity<>(jsonRequest, headers);
+        ResponseEntity<String> response = restTemplate.postForEntity(url, requestEntity, String.class);
+        
+        return response.getBody();  // Extract response body
+    }
+
+    // PUT Request
+    public String updateData(String jsonRequest) {
+        String url = "https://api.example.com/update";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Content-Type", "application/json");
+
+        HttpEntity<String> requestEntity = new HttpEntity<>(jsonRequest, headers);
+        restTemplate.put(url, requestEntity);
+
+        return "Data updated successfully";
+    }
+
+    // DELETE Request
+    public String deleteData(int id) {
+        String url = "https://api.example.com/delete/" + id;
+        restTemplate.delete(url);
+
+        return "Data deleted successfully";
+    }
+}
+
+
+
+
+
+
+// src/main/java/com/example/demo/controller/ApiController.java
+
+package com.example.demo.controller;
+
+import com.example.demo.service.ApiService;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api")
+public class ApiController {
+
+    private final ApiService apiService;
+
+    public ApiController(ApiService apiService) {
+        this.apiService = apiService;
+    }
+
+    // GET Request to call external API
+    @GetMapping("/get-data")
+    public String getData() {
+        return apiService.getData();
+    }
+
+    // POST Request to call external API
+    @PostMapping("/create-data")
+    public String createData(@RequestBody String jsonRequest) {
+        return apiService.createData(jsonRequest);
+    }
+
+    // PUT Request to call external API
+    @PutMapping("/update-data")
+    public String updateData(@RequestBody String jsonRequest) {
+        return apiService.updateData(jsonRequest);
+    }
+
+    // DELETE Request to call external API
+    @DeleteMapping("/delete-data/{id}")
+    public String deleteData(@PathVariable int id) {
+        return apiService.deleteData(id);
+    }
+}
+
+
+
+
+
+
