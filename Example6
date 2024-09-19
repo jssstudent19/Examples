@@ -200,3 +200,45 @@ public class AppConfig {
         return new RestTemplate();
     }
 }
+
+
+
+
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+public class ApiController {
+
+    private final ApiService apiService;
+
+    @Autowired
+    public ApiController(ApiService apiService) {
+        this.apiService = apiService;
+    }
+
+    // GET Request to call external API
+    @GetMapping("/get-data")
+    public String getData() {
+        return apiService.getData();
+    }
+
+    // POST Request to call external API
+    @PostMapping("/create-data")
+    public String createData(@RequestBody String jsonRequest) {
+        return apiService.createData(jsonRequest);
+    }
+
+    // PUT Request to call external API
+    @PutMapping("/update-data")
+    public String updateData(@RequestBody String jsonRequest) {
+        return apiService.updateData(jsonRequest);
+    }
+
+    // DELETE Request to call external API
+    @DeleteMapping("/delete-data/{id}")
+    public String deleteData(@PathVariable int id) {
+        return apiService.deleteData(id);
+    }
+}
