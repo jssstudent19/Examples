@@ -126,3 +126,77 @@ public class ApiController {
 </dependencies>
 
 
+
+
+
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+
+@Service
+public class ApiService {
+
+    private final RestTemplate restTemplate;
+
+    public ApiService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
+
+    // Example Postman Mock URL for GET request
+    private final String POSTMAN_GET_URL = "https://postman-echo.com/get";
+    
+    // Example Postman Mock URL for POST request
+    private final String POSTMAN_POST_URL = "https://postman-echo.com/post";
+    
+    // Example Postman Mock URL for PUT request
+    private final String POSTMAN_PUT_URL = "https://postman-echo.com/put";
+    
+    // Example Postman Mock URL for DELETE request
+    private final String POSTMAN_DELETE_URL = "https://postman-echo.com/delete/";
+
+    // GET method to call the Postman URL
+    public String getData() {
+        ResponseEntity<String> response = restTemplate.getForEntity(POSTMAN_GET_URL, String.class);
+        return response.getBody();
+    }
+
+    // POST method to call the Postman URL
+    public String createData(String jsonRequest) {
+        HttpEntity<String> request = new HttpEntity<>(jsonRequest);
+        ResponseEntity<String> response = restTemplate.postForEntity(POSTMAN_POST_URL, request, String.class);
+        return response.getBody();
+    }
+
+    // PUT method to call the Postman URL
+    public String updateData(String jsonRequest) {
+        HttpEntity<String> request = new HttpEntity<>(jsonRequest);
+        ResponseEntity<String> response = restTemplate.exchange(POSTMAN_PUT_URL, HttpMethod.PUT, request, String.class);
+        return response.getBody();
+    }
+
+    // DELETE method to call the Postman URL
+    public String deleteData(int id) {
+        String urlWithId = POSTMAN_DELETE_URL + id;
+        ResponseEntity<String> response = restTemplate.exchange(urlWithId, HttpMethod.DELETE, null, String.class);
+        return response.getBody();
+    }
+}
+
+
+
+
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestTemplate;
+
+@Configuration
+public class AppConfig {
+
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
+}
