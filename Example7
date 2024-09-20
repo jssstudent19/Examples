@@ -50,3 +50,53 @@ public class TimeService {
 
 
 
+package com.example.datetimeapi.controller;
+
+import com.example.datetimeapi.service.TimeService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class TimeController {
+
+    @Autowired
+    private TimeService timeService;
+
+    // Allow slashes in the timezone path variable by encoding it
+    @GetMapping("/time/{timezone:.+}")
+    public String getTimeByTimezone(@PathVariable String timezone) {
+        return timeService.getTimeByTimezone(timezone);
+    }
+}
+
+
+
+
+
+
+
+package com.example.datetimeapi.service;
+
+import com.example.datetimeapi.exception.ResourceNotFoundException;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
+
+@Service
+public class TimeService {
+
+    // Fetches time for a given timezone using World Time API
+    public String getTimeByTimezone(String timezone) {
+        String url = "http://worldtimeapi.org/api/timezone/" + timezone;
+        RestTemplate restTemplate = new RestTemplate();
+        try {
+            return restTemplate.getForObject(url, String.class);
+        } catch (HttpClientErrorException.NotFound e) {
+            throw new ResourceNotFoundException("Timezone not found: " + timezone);
+        } catch (Exception e) {
+            throw new RuntimeException("An error occurred while fetching the time");
+        }
+    }
+}
