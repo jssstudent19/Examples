@@ -1,0 +1,220 @@
+<dependencies>
+    <!-- Spring Boot Dependencies -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    
+    <!-- Spring Data JPA for database interaction -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+
+    <!-- H2 Database -->
+    <dependency>
+        <groupId>com.h2database</groupId>
+        <artifactId>h2</artifactId>
+        <scope>runtime</scope>
+    </dependency>
+
+    <!-- Spring Boot Test -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-test</artifactId>
+        <scope>test</scope>
+    </dependency>
+</dependencies>
+
+
+
+spring.datasource.url=jdbc:h2:mem:testdb
+spring.datasource.driverClassName=org.h2.Driver
+spring.datasource.username=sa
+spring.datasource.password=password
+spring.h2.console.enabled=true
+spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+spring.jpa.hibernate.ddl-auto=update
+
+
+
+
+
+// src/main/java/com/icecreamshop/model/IceCream.java
+
+package com.icecreamshop.model;
+
+import javax.persistence.*;
+
+@Entity
+public class IceCream {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    private String flavour;
+    private double price;
+
+    // Constructors, Getters, and Setters
+    public IceCream() {}
+
+    public IceCream(String flavour, double price) {
+        this.flavour = flavour;
+        this.price = price;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getFlavour() {
+        return flavour;
+    }
+
+    public void setFlavour(String flavour) {
+        this.flavour = flavour;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+}
+
+
+
+
+
+// src/main/java/com/icecreamshop/repository/IceCreamRepository.java
+
+package com.icecreamshop.repository;
+
+import com.icecreamshop.model.IceCream;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface IceCreamRepository extends JpaRepository<IceCream, Long> {
+}
+
+
+
+
+
+
+// src/main/java/com/icecreamshop/service/IceCreamService.java
+
+package com.icecreamshop.service;
+
+import com.icecreamshop.model.IceCream;
+import com.icecreamshop.repository.IceCreamRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class IceCreamService {
+
+    @Autowired
+    private IceCreamRepository iceCreamRepository;
+
+    public List<IceCream> getAllFlavours() {
+        return iceCreamRepository.findAll();
+    }
+
+    public Optional<IceCream> getFlavourById(Long id) {
+        return iceCreamRepository.findById(id);
+    }
+
+    public IceCream addIceCream(IceCream iceCream) {
+        return iceCreamRepository.save(iceCream);
+    }
+
+    public IceCream updateIceCream(Long id, IceCream updatedIceCream) {
+        return iceCreamRepository.findById(id).map(iceCream -> {
+            iceCream.setFlavour(updatedIceCream.getFlavour());
+            iceCream.setPrice(updatedIceCream.getPrice());
+            return iceCreamRepository.save(iceCream);
+        }).orElseGet(() -> {
+            updatedIceCream.setId(id);
+            return iceCreamRepository.save(updatedIceCream);
+        });
+    }
+
+    public void deleteIceCream(Long id) {
+        iceCreamRepository.deleteById(id);
+    }
+}
+
+
+
+
+// src/main/java/com/icecreamshop/controller/IceCreamController.java
+
+package com.icecreamshop.controller;
+
+import com.icecreamshop.model.IceCream;
+import com.icecreamshop.service.IceCreamService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/api/icecream")
+public class IceCreamController {
+
+    @Autowired
+    private IceCreamService iceCreamService;
+
+    @GetMapping
+    public List<IceCream> getAllFlavours() {
+        return iceCreamService.getAllFlavours();
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<IceCream> getFlavourById(@PathVariable Long id) {
+        Optional<IceCream> iceCream = iceCreamService.getFlavourById(id);
+        if (iceCream.isPresent()) {
+            return ResponseEntity.ok(iceCream.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping
+    public IceCream addIceCream(@RequestBody IceCream iceCream) {
+        return iceCreamService.addIceCream(iceCream);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<IceCream> updateIceCream(@PathVariable Long id, @RequestBody IceCream updatedIceCream) {
+        return ResponseEntity.ok(iceCreamService.updateIceCream(id, updatedIceCream));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteIceCream(@PathVariable Long id) {
+        iceCreamService.deleteIceCream(id);
+        return ResponseEntity.noContent().build();
+    }
+}
+
+
+
+
+
+
+
+
+
+
