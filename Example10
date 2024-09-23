@@ -1,0 +1,96 @@
+<dependencies>
+    <!-- Exclude default logging -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter</artifactId>
+        <exclusions>
+            <exclusion>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-logging</artifactId>
+            </exclusion>
+        </exclusions>
+    </dependency>
+
+    <!-- Add Log4j2 starter -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-log4j2</artifactId>
+    </dependency>
+</dependencies>
+
+
+
+
+
+
+
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="30">
+    <Appenders>
+        <!-- Console Appender -->
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        </Console>
+
+        <!-- File Appender -->
+        <File name="FileAppender" fileName="logs/spring-boot-app.log" append="true">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} [%t] %-5level %logger{36} - %msg%n"/>
+        </File>
+    </Appenders>
+
+    <Loggers>
+        <!-- Log configuration for application -->
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="FileAppender"/>
+        </Root>
+
+        <!-- Example of enabling DEBUG for specific packages -->
+        <Logger name="com.example.demo" level="debug" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="FileAppender"/>
+        </Logger>
+    </Loggers>
+</Configuration>
+
+
+
+
+
+logging.config=classpath:log.xml
+
+
+
+
+
+package com.example.demo;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class DemoApplication {
+
+    private static final Logger logger = LogManager.getLogger(DemoApplication.class);
+
+    public static void main(String[] args) {
+        SpringApplication.run(DemoApplication.class, args);
+
+        // Log at different levels
+        logger.trace("This is a TRACE level message");
+        logger.debug("This is a DEBUG level message");
+        logger.info("This is an INFO level message");
+        logger.warn("This is a WARN level message");
+        logger.error("This is an ERROR level message");
+    }
+}
+
+
+
+
+
+
+
+
