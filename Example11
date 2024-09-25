@@ -1,0 +1,108 @@
+public class TryCatchDemo {
+    public static void main(String[] args) {
+        try {
+            int[] numbers = {1, 2, 3};
+            System.out.println(numbers[5]);  // This will throw ArrayIndexOutOfBoundsException
+        } catch (ArrayIndexOutOfBoundsException e) {
+            System.out.println("Caught an exception: " + e);
+        }
+    }
+}
+
+
+
+
+public class FinallyDemo {
+    public static void main(String[] args) {
+        try {
+            int result = 10 / 0;  // This will throw ArithmeticException
+        } catch (ArithmeticException e) {
+            System.out.println("Caught an exception: " + e);
+        } finally {
+            System.out.println("This block is always executed, regardless of exceptions.");
+        }
+    }
+}
+
+
+
+
+public class ThrowsDemo {
+    public static void main(String[] args) {
+        try {
+            riskyMethod();
+        } catch (Exception e) {
+            System.out.println("Caught exception from riskyMethod: " + e);
+        }
+    }
+
+    // This method declares that it can throw an Exception
+    public static void riskyMethod() throws Exception {
+        throw new Exception("An error occurred in riskyMethod.");
+    }
+}
+
+
+
+
+
+public class ThrowDemo {
+    public static void main(String[] args) {
+        try {
+            checkAge(15);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Caught exception: " + e.getMessage());
+        }
+    }
+
+    // This method throws an exception if age is less than 18
+    public static void checkAge(int age) {
+        if (age < 18) {
+            throw new IllegalArgumentException("Age must be 18 or older.");
+        }
+        System.out.println("Age is valid.");
+    }
+}
+
+
+
+
+
+// Custom Exception class
+class InvalidAgeException extends Exception {
+    // Constructor to initialize the exception message
+    public InvalidAgeException(String message) {
+        super(message);
+    }
+}
+
+public class CustomExceptionDemo {
+    
+    // Method that throws the custom exception if age is invalid
+    public static void checkEligibility(int age) throws InvalidAgeException {
+        if (age < 18) {
+            throw new InvalidAgeException("Age is below 18, not eligible.");
+        } else {
+            System.out.println("Age is valid. You are eligible.");
+        }
+    }
+    
+    public static void main(String[] args) {
+        try {
+            // Test the method with an invalid age
+            checkEligibility(15);
+        } catch (InvalidAgeException e) {
+            System.out.println("Caught custom exception: " + e.getMessage());
+        }
+        
+        // Test the method with a valid age
+        try {
+            checkEligibility(21);
+        } catch (InvalidAgeException e) {
+            System.out.println("Caught custom exception: " + e.getMessage());
+        }
+    }
+}
+
+
+
