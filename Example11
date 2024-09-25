@@ -106,3 +106,43 @@ public class CustomExceptionDemo {
 
 
 
+// Enum representing days of the week
+enum Day {
+    SUNDAY, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY
+}
+
+public class EnumDemo {
+    
+    // Method to demonstrate enum in a switch-case
+    public static void printDayActivity(Day day) {
+        switch (day) {
+            case MONDAY:
+                System.out.println("Start of the work week.");
+                break;
+            case FRIDAY:
+                System.out.println("Almost weekend!");
+                break;
+            case SUNDAY:
+                System.out.println("Rest and relax.");
+                break;
+            default:
+                System.out.println("Work day.");
+                break;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Accessing enum constants
+        Day today = Day.WEDNESDAY;
+        System.out.println("Today is: " + today);
+
+        // Using enum in a switch statement
+        printDayActivity(today);
+
+        // Loop through all enum values
+        System.out.println("\nAll days of the week:");
+        for (Day day : Day.values()) {
+            System.out.println(day);
+        }
+    }
+}
