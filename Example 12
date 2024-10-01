@@ -80,3 +80,69 @@ public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest login
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: An unexpected error occurred.");
     }
 }
+
+
+
+
+
+
+@PostMapping(value = "/signup", consumes = MediaType.APPLICATION_JSON_VALUE)
+public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) throws ServiceException {
+
+    // 1. Validate if the username is empty or null
+    if (signUpRequest.getUserName() == null || signUpRequest.getUserName().trim().isEmpty()) {
+        return ResponseEntity.badRequest().body("Error: Username cannot be empty.");
+    }
+
+    // 2. Check if username contains valid characters and is within the allowed length
+    if (!signUpRequest.getUserName().matches("^[a-zA-Z0-9._-]{3,20}$")) {
+        return ResponseEntity.badRequest().body("Error: Username must be between 3 and 20 characters and contain only letters, numbers, dots, underscores, or hyphens.");
+    }
+
+    // 3. Validate if the username is already taken
+    if (userRepository.existsByUsername(signUpRequest.getUserName()).isPresent()) {
+        return ResponseEntity.badRequest().body("Error: Username is already taken.");
+    }
+
+    // 4. Validate if the email is empty or null
+    if (signUpRequest.getEmail() == null || signUpRequest.getEmail().trim().isEmpty()) {
+        return ResponseEntity.badRequest().body("Error: Email cannot be empty.");
+    }
+
+    // 5. Check if the email format is valid
+    if (!signUpRequest.getEmail().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[a-zA-Z]{2,7}$")) {
+        return ResponseEntity.badRequest().body("Error: Email format is invalid.");
+    }
+
+    // 6. Validate if the email is already in use
+    if (userRepository.existsByEmail(signUpRequest.getEmail()).equals(Boolean.TRUE)) {
+        return ResponseEntity.badRequest().body("Error: Email is already in use.");
+    }
+
+    // 7. Validate if the password is empty or null
+    if (signUpRequest.getPassword() == null || signUpRequest.getPassword().trim().isEmpty()) {
+        return ResponseEntity.badRequest().body("Error: Password cannot be empty.");
+    }
+
+    // 8. Check if password is strong enough (minimum 8 characters, at least 1 digit, 1 letter, and 1 special character)
+    if (!signUpRequest.getPassword().matches("^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[@#$%^&+=]).{8,20}$")) {
+        return ResponseEntity.badRequest().body("Error: Password must be between 8 and 20 characters, contain at least one digit, one letter, and one special character.");
+    }
+
+    // 9. Check if the password confirmation matches the password (if your signup request has a confirmation field)
+    if (signUpRequest.getPasswordConfirmation() != null &&
+        !signUpRequest.getPassword().equals(signUpRequest.getPasswordConfirmation())) {
+        return ResponseEntity.badRequest().body("Error: Password and password confirmation do not match.");
+    }
+
+    // Convert signup request to User and UserRole objects and save them
+    User user = SecurityUtils.convertToUser(signUpRequest, encoder, sequenceGenerator);
+    UserRole userRole = SecurityUtils.convertToUserRole(user, signUpRequest);
+
+    // Save the user and role in the repository
+    userRepository.save(user);
+    userRolerepository.save(userRole);
+
+    // Return successful response
+    return ResponseEntity.ok("User registered successfully!");
+}
