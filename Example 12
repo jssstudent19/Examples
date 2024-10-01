@@ -146,3 +146,64 @@ public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRe
     // Return successful response
     return ResponseEntity.ok("User registered successfully!");
 }
+
+
+
+
+
+
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
+import java.math.BigInteger;
+import java.time.LocalDateTime;
+
+@Entity
+public class User {
+
+    @Id
+    @NotNull(message = "User ID cannot be null.")
+    private BigInteger userId;
+
+    @NotBlank(message = "First name cannot be blank.")
+    @Size(min = 2, max = 50, message = "First name must be between 2 and 50 characters.")
+    private String firstName;
+
+    @Size(max = 50, message = "Second name must be less than 50 characters.")
+    private String secondName;
+
+    @NotBlank(message = "Username cannot be blank.")
+    @Size(min = 3, max = 20, message = "Username must be between 3 and 20 characters.")
+    private String username;
+
+    @NotBlank(message = "Password cannot be blank.")
+    @Size(min = 8, message = "Password must be at least 8 characters long.")
+    private String password;
+
+    @Pattern(regexp = "^\\+?[0-9. ()-]{7,25}$", message = "Contact number is invalid.")
+    private String contactNumber;
+
+    @NotBlank(message = "Email cannot be blank.")
+    @Email(message = "Email format is invalid.")
+    private String email;
+
+    @NotBlank(message = "Created by cannot be blank.")
+    private String createdBy;
+
+    @NotNull(message = "Creation date cannot be null.")
+    private LocalDateTime createdOn;
+
+    private String lastChngdByUser;
+
+    private LocalDateTime lastChngdon;
+
+    // Getters and setters
+}
+
+
+
+
