@@ -313,3 +313,47 @@ public class EPGSportsController {
         return epgService.getCountByMessageType(systemName, messageType, interval, stage, region);
     }
 }
+
+
+
+
+
+import javax.validation.Valid;
+import javax.validation.constraints.*;
+
+@RestController
+@RequestMapping("dms/epg")
+@CrossOrigin(origins = "*", maxAge = 3600, methods = { RequestMethod.OPTIONS, RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE }, allowedHeaders = "*")
+public class EPGSportsController {
+
+    @Autowired
+    EPGService epgService;
+
+    @PostMapping("/addComment")
+    public Map<String, Boolean> addComment(@Valid @RequestBody Comment comment, @RequestParam @Min(value = 1, message = "ID must be a positive number") long id) throws Exception {
+
+        log.info("Inserting the comment for the id {}", id);
+
+        // Ensure that the comment text is sanitized and prevent malicious input
+        if (containsSQLInjectionRisk(comment.getText())) {
+            throw new Exception("Invalid comment text. Potential SQL injection detected.");
+        }
+
+        boolean result = epgService.addComment(id, comment);
+
+        return Collections.singletonMap("success", result);
+    }
+
+    // Check for common SQL injection patterns
+    private boolean containsSQLInjectionRisk(String input) {
+        String[] sqlInjectionKeywords = { "select ", "insert ", "update ", "delete ", "drop ", "--", ";", "/*", "*/", "xp_" };
+        String lowerCaseInput = input.toLowerCase();
+
+        for (String keyword : sqlInjectionKeywords) {
+            if (lowerCaseInput.contains(keyword)) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
