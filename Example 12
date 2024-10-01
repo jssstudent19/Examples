@@ -207,3 +207,62 @@ public class User {
 
 
 
+import javax.validation.constraints.*;
+import java.util.Optional;
+import java.time.LocalDate;
+
+@RestController
+@RequestMapping("dms/epg")
+@CrossOrigin(origins = "*", maxAge = 3600, methods = { RequestMethod.OPTIONS, RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE }, allowedHeaders = "*")
+public class EPGSportsController {
+
+    @Autowired
+    EPGService epgService;
+
+    @Autowired
+    TableNotfications notification;
+
+    String regex = "^[a-zA-Z0-9]*$"; // Alphanumeric validation for systemName
+
+    // Bean Validations applied here
+    @GetMapping("/monitoringData")
+    public List<DataTemplate> getMonitoringData(
+            @RequestParam Optional<@Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "Invalid date format, expected YYYY-MM-DD") String> date,
+            @RequestParam Optional<@Pattern(regexp = "^(SUCCESS|FAILURE|ALL)$", message = "resultType must be either SUCCESS, FAILURE, or ALL") String> resultType,
+            @RequestParam @NotBlank @Pattern(regexp = "^[a-zA-Z0-9]*$", message = "Invalid System Name") String systemName,
+            @RequestParam @NotBlank String stage) throws Exception {
+
+        // Validation for optional resultType
+        if (!resultType.isPresent()) {
+            resultType = Optional.of("%");
+        }
+
+        // systemName is already validated by @Pattern
+        
+        // If date is not present
+        if (!date.isPresent()) {
+            return epgService.getMonitoringData(resultType.get(), systemName, stage);
+        }
+
+        // Parse date if present
+        List<DataTemplate> res = epgService.getMonitoringData(
+                LocalDate.parse(date.get()), resultType.get(), systemName, stage);
+
+        return res;
+    }
+
+    @PostMapping("sendData")
+    public Map<String, Boolean> sendData(@RequestBody @Valid DataTemplate data) {
+        boolean result = false;
+        result = epgService.saveData(data);
+        log.info("Received monitoring data: {}", data);
+
+        try {
+            notification.sendMessage(data);
+        } catch (Exception e) {
+            log.error("Error occurred: {}", e);
+        }
+
+        return Collections.singletonMap("success", result);
+    }
+}
