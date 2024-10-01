@@ -266,3 +266,50 @@ public class EPGSportsController {
         return Collections.singletonMap("success", result);
     }
 }
+
+
+
+
+
+
+
+
+import javax.validation.constraints.*;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("dms/epg")
+@CrossOrigin(origins = "*", maxAge = 3600, methods = { RequestMethod.OPTIONS, RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE }, allowedHeaders = "*")
+public class EPGSportsController {
+
+    @Autowired
+    EPGService epgService;
+
+    String regex = "^[a-zA-Z0-9]*$"; // Regular expression for systemName
+
+    @GetMapping("countByType")
+    public Object getCountByType(
+            @RequestParam @NotBlank @Pattern(regexp = "^[a-zA-Z0-9]*$", message = "Invalid System Name") String systemName,
+            @RequestParam @NotBlank String messageType,
+            @RequestParam @Min(value = 1, message = "Interval value should be greater than zero") int interval,
+            @RequestParam @NotBlank @Pattern(regexp = "^(OP|QA2)$", message = "Invalid stage. Allowed values: OP, QA2") String stage,
+            @RequestParam @Pattern(regexp = "^(AIC|EIC|KIC|RUC)$", message = "Invalid region. Allowed values: AIC, EIC, KIC, RUC") String region,
+            @RequestParam("cntryCode") Optional<@Size(max = 2, message = "Country code must be at most 2 characters") String> cntryCode) throws Exception {
+
+        // Validate systemName against regex (already handled by @Pattern)
+        if (!systemName.matches(regex)) {
+            throw new Exception("Please Enter valid SystemName");
+        }
+
+        // Country code validation when systemName is "epg"
+        if (systemName.equals("epg")) {
+            if (!cntryCode.isPresent() || cntryCode.get().isEmpty()) {
+                throw new Exception("Country code is mandatory for EPG system type");
+            }
+            region += "-" + cntryCode.get();
+        }
+
+        // Call the service layer to get the count by message type
+        return epgService.getCountByMessageType(systemName, messageType, interval, stage, region);
+    }
+}
