@@ -1,0 +1,89 @@
+<dependency>
+    <groupId>org.springdoc</groupId>
+    <artifactId>springdoc-openapi-ui</artifactId>
+    <version>1.7.0</version>
+</dependency>
+
+
+
+
+// src/main/java/com/icecreamshop/config/SwaggerConfig.java
+
+package com.icecreamshop.config;
+
+import io.swagger.v3.oas.models.ExternalDocumentation;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Contact;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.info.License;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class SwaggerConfig {
+
+    @Bean
+    public OpenAPI customOpenAPI() {
+        return new OpenAPI()
+            .info(new Info().title("Ice Cream Shop API")
+            .description("API for managing Ice Cream flavours and prices")
+            .version("1.0")
+            .contact(new Contact().name("Ice Cream Shop").email("support@icecreamshop.com"))
+            .license(new License().name("Apache 2.0").url("http://springdoc.org")))
+            .externalDocs(new ExternalDocumentation()
+            .description("Ice Cream Shop API Documentation")
+            .url("https://github.com/icecreamshop/docs"));
+    }
+}
+
+
+
+
+http://localhost:8080/swagger-ui.html
+
+
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@RestController
+@RequestMapping("/api/icecream")
+@Tag(name = "Ice Cream API", description = "Endpoints for managing ice cream data")
+public class IceCreamController {
+
+    @Autowired
+    private IceCreamService iceCreamService;
+
+    @GetMapping
+    @Operation(summary = "Get all ice cream flavours", description = "Fetches all available ice cream flavours and their prices")
+    public List<IceCream> getAllFlavours() {
+        return iceCreamService.getAllFlavours();
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Get ice cream by ID", description = "Fetches a single ice cream flavour based on the ID")
+    public ResponseEntity<IceCream> getFlavourById(@PathVariable Long id) {
+        Optional<IceCream> iceCream = iceCreamService.getFlavourById(id);
+        return iceCream.map(ResponseEntity::ok)
+                       .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @PostMapping
+    @Operation(summary = "Add a new ice cream flavour", description = "Creates a new ice cream flavour and stores it in the database")
+    public IceCream addIceCream(@RequestBody IceCream iceCream) {
+        return iceCreamService.addIceCream(iceCream);
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Update an existing ice cream flavour", description = "Updates the flavour and price of an existing ice cream based on the ID")
+    public ResponseEntity<IceCream> updateIceCream(@PathVariable Long id, @RequestBody IceCream updatedIceCream) {
+        return ResponseEntity.ok(iceCreamService.updateIceCream(id, updatedIceCream));
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete an ice cream flavour", description = "Deletes an ice cream flavour from the database based on the ID")
+    public ResponseEntity<Void> deleteIceCream(@PathVariable Long id) {
+        iceCreamService.deleteIceCream(id);
+        return ResponseEntity.noContent().build();
+    }
+}
