@@ -87,3 +87,10 @@ public class IceCreamController {
         return ResponseEntity.noContent().build();
     }
 }
+
+
+
+
+
+# Enable Swagger UI path
+springdoc.swagger-ui.path=/swagger-ui.html
