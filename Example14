@@ -126,3 +126,132 @@ ALTER TABLE ice_cream ADD COLUMN purchase_date VARCHAR(10);
     "price": 3.50,
     "purchaseDate": "2024-10-03"
 }
+
+
+
+
+
+
+
+
+
+// src/main/java/com/icecreamshop/model/IceCream.java
+
+package com.icecreamshop.model;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import java.time.LocalDate;
+
+@Entity
+public class IceCream {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String flavour;
+    private double price;
+
+    @Column(name = "purchase_date")
+    @NotNull(message = "Purchase date is required")
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate purchaseDate;  // Changed from String to LocalDate
+
+    // Constructors, Getters, and Setters
+    public IceCream() {}
+
+    public IceCream(String flavour, double price, LocalDate purchaseDate) {
+        this.flavour = flavour;
+        this.price = price;
+        this.purchaseDate = purchaseDate;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getFlavour() {
+        return flavour;
+    }
+
+    public void setFlavour(String flavour) {
+        this.flavour = flavour;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    public LocalDate getPurchaseDate() {
+        return purchaseDate;
+    }
+
+    public void setPurchaseDate(LocalDate purchaseDate) {
+        this.purchaseDate = purchaseDate;
+    }
+}
+
+
+
+
+
+
+
+// src/main/java/com/icecreamshop/controller/IceCreamController.java
+
+import org.springframework.validation.annotation.Validated;
+import javax.validation.Valid;
+
+@RestController
+@RequestMapping("/api/icecream")
+public class IceCreamController {
+
+    @Autowired
+    private IceCreamService iceCreamService;
+
+    @PostMapping
+    public ResponseEntity<IceCream> addIceCream(@RequestBody @Valid IceCream iceCream) {
+        return ResponseEntity.ok(iceCreamService.addIceCream(iceCream));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<IceCream> updateIceCream(@PathVariable Long id, @RequestBody @Valid IceCream updatedIceCream) {
+        return ResponseEntity.ok(iceCreamService.updateIceCream(id, updatedIceCream));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<IceCream> getFlavourById(@PathVariable Long id) {
+        Optional<IceCream> iceCream = iceCreamService.getFlavourById(id);
+        if (iceCream.isPresent()) {
+            return ResponseEntity.ok(iceCream.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping
+    public List<IceCream> getAllFlavours() {
+        return iceCreamService.getAllFlavours();
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteIceCream(@PathVariable Long id) {
+        iceCreamService.deleteIceCream(id);
+        return ResponseEntity.noContent().build();
+    }
+}
+
+
+
+
+
