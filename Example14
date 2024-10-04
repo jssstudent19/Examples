@@ -1,1 +1,128 @@
+// src/main/java/com/icecreamshop/model/IceCream.java
 
+package com.icecreamshop.model;
+
+import javax.persistence.*;
+import javax.validation.constraints.Pattern;
+
+@Entity
+public class IceCream {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    private String flavour;
+    private double price;
+
+    // New field for purchase date
+    @Column(name = "purchase_date")
+    @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2}", message = "Date must be in the format yyyy-MM-dd")
+    private String purchaseDate;
+
+    // Constructors, Getters, and Setters
+    public IceCream() {}
+
+    public IceCream(String flavour, double price, String purchaseDate) {
+        this.flavour = flavour;
+        this.price = price;
+        this.purchaseDate = purchaseDate;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getFlavour() {
+        return flavour;
+    }
+
+    public void setFlavour(String flavour) {
+        this.flavour = flavour;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    public String getPurchaseDate() {
+        return purchaseDate;
+    }
+
+    public void setPurchaseDate(String purchaseDate) {
+        this.purchaseDate = purchaseDate;
+    }
+}
+
+
+
+
+
+
+
+// src/main/java/com/icecreamshop/service/IceCreamService.java
+
+public IceCream addIceCream(IceCream iceCream) {
+    return iceCreamRepository.save(iceCream);
+}
+
+public IceCream updateIceCream(Long id, IceCream updatedIceCream) {
+    return iceCreamRepository.findById(id).map(iceCream -> {
+        iceCream.setFlavour(updatedIceCream.getFlavour());
+        iceCream.setPrice(updatedIceCream.getPrice());
+        iceCream.setPurchaseDate(updatedIceCream.getPurchaseDate()); // Add purchase date update
+        return iceCreamRepository.save(iceCream);
+    }).orElseGet(() -> {
+        updatedIceCream.setId(id);
+        return iceCreamRepository.save(updatedIceCream);
+    });
+}
+
+
+
+
+
+
+
+// src/main/java/com/icecreamshop/controller/IceCreamController.java
+
+@PostMapping
+public ResponseEntity<IceCream> addIceCream(@RequestBody @Valid IceCream iceCream) {
+    return ResponseEntity.ok(iceCreamService.addIceCream(iceCream));
+}
+
+@PutMapping("/{id}")
+public ResponseEntity<IceCream> updateIceCream(@PathVariable Long id, @RequestBody @Valid IceCream updatedIceCream) {
+    return ResponseEntity.ok(iceCreamService.updateIceCream(id, updatedIceCream));
+}
+
+
+
+
+
+
+spring.jpa.hibernate.ddl-auto=update
+
+
+
+
+
+ALTER TABLE ice_cream ADD COLUMN purchase_date VARCHAR(10);
+
+
+
+
+
+{
+    "flavour": "Vanilla",
+    "price": 3.50,
+    "purchaseDate": "2024-10-03"
+}
