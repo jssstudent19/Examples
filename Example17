@@ -1,0 +1,51 @@
+import org.springframework.web.bind.annotation.*;
+import javax.validation.constraints.Pattern;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.List;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/api")
+public class MonitoringController {
+
+    private final EpgService epgService;
+
+    public MonitoringController(EpgService epgService) {
+        this.epgService = epgService;
+    }
+
+    @GetMapping("/monitoringData")
+    public List<DataTemplate> getMonitoringData(
+            @RequestParam Optional<String> date,
+            @RequestParam Optional<String> resultType,
+            @RequestParam @Pattern(regexp = "^[A-Za-z0-9]+$", message = "Please Enter Valid SystemName") String systemName,
+            @RequestParam String stage) throws Exception {
+
+        // Validate resultType
+        if (resultType.isPresent()) {
+            String resType = resultType.get();
+            if (!resType.equalsIgnoreCase("OK") && !resType.equalsIgnoreCase("Error")) {
+                throw new Exception("Result type must be either 'OK' or 'Error'");
+            }
+        } else {
+            resultType = Optional.of("%");  // Default to wildcard
+        }
+
+        // Validate systemName using regex (already applied with @Pattern)
+
+        // Validate date format if present
+        if (date.isPresent()) {
+            try {
+                LocalDate parsedDate = LocalDate.parse(date.get(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                return epgService.getMonitoringData(parsedDate, resultType.get(), systemName, stage);
+            } catch (DateTimeParseException e) {
+                throw new Exception("Invalid date format, please use yyyy-MM-dd");
+            }
+        }
+
+        // If no date is present, call service without date
+        return epgService.getMonitoringData(resultType.get(), systemName, stage);
+    }
+}
