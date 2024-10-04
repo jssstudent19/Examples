@@ -364,3 +364,57 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 }
+
+
+
+
+
+
+
+
+
+// src/main/java/com/icecreamshop/exception/GlobalExceptionHandler.java
+
+package com.icecreamshop.exception;
+
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@ControllerAdvice
+public class GlobalExceptionHandler {
+
+    // Generic handler for various exceptions
+    @ExceptionHandler(Exception.class)
+    public <T extends Exception> ResponseEntity<Map<String, String>> handleException(T ex) {
+        Map<String, String> errorResponse = new HashMap<>();
+
+        // Handling specific exception types with generics
+        if (ex instanceof InvalidFormatException) {
+            InvalidFormatException invalidFormatEx = (InvalidFormatException) ex;
+            if (invalidFormatEx.getTargetType().equals(LocalDate.class)) {
+                errorResponse.put("purchaseDate", "Invalid date format. Expected format is yyyy-MM-dd");
+            } else {
+                errorResponse.put("error", "Invalid input format");
+            }
+        } else if (ex instanceof MethodArgumentNotValidException) {
+            MethodArgumentNotValidException validationEx = (MethodArgumentNotValidException) ex;
+            validationEx.getBindingResult().getFieldErrors().forEach(error -> {
+                String fieldName = error.getField();
+                String errorMessage = error.getDefaultMessage();
+                errorResponse.put(fieldName, errorMessage);
+            });
+        } else {
+            // Catch-all for other exceptions
+            errorResponse.put("error", "An unexpected error occurred");
+        }
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+}
