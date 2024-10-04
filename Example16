@@ -121,3 +121,46 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 }
+
+
+
+
+
+package com.icecreamshop.exception;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@ControllerAdvice
+public class GlobalExceptionHandler {
+
+    // Handle validation exceptions, including null or empty fields
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+
+        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
+            String fieldName = error.getField();
+            String errorMessage = error.getDefaultMessage();
+
+            // Check if the field is null or blank and set a custom message
+            if (errorMessage.contains("cannot be null")) {
+                errors.put(fieldName, fieldName + " cannot be null");
+            } else if (errorMessage.contains("cannot be empty")) {
+                errors.put(fieldName, fieldName + " cannot be empty");
+            } else {
+                errors.put(fieldName, errorMessage);  // Default message from annotation
+            }
+        }
+
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+}
+
