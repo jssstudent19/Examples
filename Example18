@@ -51,3 +51,79 @@ public Object getCountByType(
     // Call the service method and return the result
     return epgService.getCountByMessageType(systemName, messageType, interval, stage, region);
 }
+
+
+
+
+
+public Map<String, Boolean> addComment(@Valid @RequestBody Comment comment, @RequestParam long id) throws Exception {
+    log.info("Inserting the comment for the id {}", id);
+
+    // Retrieve DataTemplate by monitoringId
+    DataTemplate dataTemplate = dataTemplateService.findById(id);
+    if (dataTemplate == null) {
+        throw new Exception("DataTemplate with the given ID not found.");
+    }
+
+    // Set the retrieved DataTemplate to the Comment
+    comment.setDataTemplate(dataTemplate);
+
+    // Add the comment via service (this is where Hibernate does the SQL insert safely)
+    boolean result = epgService.addComment(id, comment);
+
+    return Collections.singletonMap("success", result);
+}
+
+
+
+
+public Map<String, Boolean> addComment(@Valid @RequestBody Comment comment, @RequestParam long id) throws Exception {
+    // Log the insertion process
+    log.info("Inserting the comment for the id {}", id);
+
+    // Retrieve the DataTemplate by the monitoringId
+    DataTemplate dataTemplate = dataTemplateService.findById(id);
+    
+    // Validate if the DataTemplate exists
+    if (dataTemplate == null) {
+        throw new Exception("DataTemplate with the given ID not found.");
+    }
+
+    // Perform additional validation on the comment content
+    validateComment(comment);
+
+    // Set the DataTemplate to the comment
+    comment.setDataTemplate(dataTemplate);
+
+    // Add the comment through the service
+    boolean result = epgService.addComment(id, comment);
+
+    // Return the success map
+    return Collections.singletonMap("success", result);
+}
+
+/**
+ * Perform additional validation on the Comment object.
+ */
+private void validateComment(Comment comment) throws Exception {
+    // Check if the comment is null or empty
+    if (comment.getComment() == null || comment.getComment().isEmpty()) {
+        throw new Exception("Comment text cannot be null or empty.");
+    }
+
+    // Check if the comment exceeds a reasonable length (e.g., 1000 characters)
+    if (comment.getComment().length() > 1000) {
+        throw new Exception("Comment text exceeds the maximum allowed length of 1000 characters.");
+    }
+
+    // Validate the content of the comment (only allow alphanumeric and some punctuation, for example)
+    if (!comment.getComment().matches("^[a-zA-Z0-9,.!?\\s]+$")) {
+        throw new Exception("Comment contains invalid characters. Only alphanumeric characters and basic punctuation are allowed.");
+    }
+
+    // Additional validation for comment's other fields (e.g., creation date)
+    if (comment.getCreatedDate() == null) {
+        throw new Exception("Created date cannot be null.");
+    }
+}
+
