@@ -1,0 +1,53 @@
+@GetMapping("countByType")
+public Object getCountByType(
+    @RequestParam String systemName,
+    @RequestParam String messageType,
+    @RequestParam int interval,
+    @RequestParam String stage,
+    @RequestParam("region") String region,
+    @RequestParam("cntryCode") Optional<String> cntryCode) throws Exception {
+
+    // Check if systemName is valid
+    String regex = "^[a-zA-Z0-9_]+$"; // Assuming a regex for valid system name
+    if (!systemName.matches(regex)) {
+        throw new Exception("Please enter a valid system name.");
+    }
+
+    // Check if messageType is not empty
+    if (messageType == null || messageType.isEmpty()) {
+        throw new Exception("MessageType cannot be empty.");
+    }
+
+    // Check if stage is not empty
+    if (stage == null || stage.isEmpty()) {
+        throw new Exception("Stage cannot be empty.");
+    }
+
+    // Check if interval is greater than zero
+    if (interval <= 0) {
+        throw new Exception("Interval value should be greater than zero.");
+    }
+
+    // Validate region
+    String[] validRegions = {"AIC", "EIC", "KIC", "RUC"};
+    boolean isValidRegion = Arrays.asList(validRegions).contains(region);
+    if (!isValidRegion) {
+        throw new Exception("Invalid region. Valid values are: AIC, EIC, KIC, RUC.");
+    }
+
+    // Additional validation for systemName "epg"
+    if (systemName.equals("epg")) {
+        if (!cntryCode.isPresent() || cntryCode.get().isEmpty()) {
+            throw new Exception("CntryCode is mandatory for EPG system type.");
+        }
+        // Ensure the country code is exactly 2 characters long
+        if (cntryCode.get().length() != 2) {
+            throw new Exception("Country code must be exactly 2 characters long.");
+        }
+        // Append country code to region if it's an EPG system
+        region += cntryCode.get();
+    }
+
+    // Call the service method and return the result
+    return epgService.getCountByMessageType(systemName, messageType, interval, stage, region);
+}
