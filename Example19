@@ -1,1 +1,58 @@
+@PostMapping("/signin")
+public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+    try {
+        // Validate if the userNameOrEmail field is blank
+        if (loginRequest.getUserNameOrEmail() == null || loginRequest.getUserNameOrEmail().trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("Error: Username/Email cannot be blank.");
+        }
+
+        // Validate if the password field is blank
+        if (loginRequest.getPassword() == null || loginRequest.getPassword().trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("Error: Password cannot be blank.");
+        }
+
+        // Authenticate the user using provided credentials
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        loginRequest.getUserNameOrEmail().toLowerCase(),
+                        loginRequest.getPassword()
+                )
+        );
+
+        // Set the authentication in the security context
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        // Generate JWT token
+        String jwt = jwtUtils.generateJwtToken(authentication);
+
+        // Get user details
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+
+        // Check if user is super_admin with specific credentials
+        if (loginRequest.getUserNameOrEmail().equalsIgnoreCase("super_admin")) {
+            if (loginRequest.getPassword().equals("Dm$ADMIN2023")) {
+                // Return success response for super_admin
+                return ResponseEntity.ok(new JwtResponse(jwt, BigInteger.ONE, "super_admin", "superadmin@lge.com"));
+            } else {
+                // Incorrect password for super_admin
+                throw new BadCredentialsException("Error: Bad Credentials for super_admin.");
+            }
+        }
+
+        // If any other username and password combination is incorrect, return an invalid message
+        if (!userDetails.getUsername().equalsIgnoreCase("super_admin")) {
+            return ResponseEntity.badRequest().body("Invalid username or password");
+        }
+
+        // Return success response with JWT for other users
+        return ResponseEntity.ok(new JwtResponse(jwt, BigInteger.ONE, userDetails.getUsername(), userDetails.getEmail()));
+
+    } catch (BadCredentialsException ex) {
+        // Handle bad credentials exception (incorrect password for super_admin)
+        return ResponseEntity.badRequest().body("Error: Incorrect Credentials!");
+    } catch (Exception e) {
+        // Handle any unexpected errors
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: An unexpected error occurred.");
+    }
+}
 
