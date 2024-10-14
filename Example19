@@ -56,3 +56,52 @@ public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest login
     }
 }
 
+
+
+
+
+Here's a sample letter:
+
+[Your Name]
+[Your Address]
+[City, State, Pincode]
+[Date]
+
+[Manager's Name]
+[Manager's Title]
+[Company Name]
+[Company Address]
+[City, State, Pincode]
+
+Subject: Request for 3-Day Leave for College Examination
+
+Dear [Manager's Name],
+
+I am writing to request a 3-day leave from [Date] to [Date] due to my upcoming college examination scheduled during this period. I have an essential exam and need to focus on my studies to ensure optimal performance.
+
+I have reviewed our team's workload and ensured that all tasks are up-to-date, minimizing any disruption. If approved, I will ensure a smooth transition of tasks and complete any pending work upon my return.
+
+I would greatly appreciate it if you could approve my leave request. If any concerns or alternative arrangements are needed, please let me know.
+
+Thank you for your understanding.
+
+Sincerely,
+
+[Your Name]
+
+CC: [Team Lead/HR Representative, if applicable]
+
+Documentation to attach:
+
+- Exam schedule/admit card
+- College ID card
+
+Remember to customize the letter according to your company's policies and procedures.
+
+Would you like me to modify the letter or provide information on:
+
+1. Leave policies
+2. Communication strategies
+3. Work-life balance
+4. Exam preparation tips
+5. Professional etiquette?
